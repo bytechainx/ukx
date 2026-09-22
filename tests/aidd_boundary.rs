@@ -14,7 +14,7 @@
 //! // AIDD: 序列标识含空格与分号 | 来源=AI | 复核=ZoneCNH/2026-09-22 | 依据=标准.md §3 标识原样保留 | 结论=保留
 //! // AIDD: 非种子 IADB 码的大小写变体 | 来源=AI | 复核=ZoneCNH/2026-09-22 | 依据=标准.md §3 不得扩集 | 结论=保留
 //! // AIDD: 十万字符的序列标识 | 来源=AI | 复核=ZoneCNH/2026-09-22 | 依据=标准.md §7 解析不得 panic | 结论=保留
-//! // AIDD: JSON `value` 为布尔或数组 | 来源=AI | 复核=ZoneCNH/2026-09-22 | 依据=标准.md §8 具名缺失 | 结论=保留
+//! // AIDD: JSON `value` 为布尔、数组或对象须拒绝 | 来源=第二轮对抗复现 | 复核=独立复核待执行/2026-09-23 | 依据=标准.md §7 原子失败 | 结论=保留
 //! // AIDD: 前导 UTF-8 BOM | 来源=AI | 复核=ZoneCNH/2026-09-22 | 依据=标准.md §6 CSV 子集 | 结论=保留
 //! // AIDD: 同序列不同期间不构成重复身份 | 来源=AI | 复核=ZoneCNH/2026-09-22 | 依据=标准.md §7 重复身份 | 结论=保留
 //! // AIDD: 修订列为全空白 | 来源=AI | 复核=ZoneCNH/2026-09-22 | 依据=标准.md §8 修订不得伪造 | 结论=保留
@@ -114,14 +114,21 @@ fn huge_series_id_does_not_panic() {
     assert_eq!(parsed[0].series.as_str().len(), 100_001);
 }
 
-/// 边界：JSON `value` 为布尔 / 数组 / 对象时按具名缺失处理，绝不 panic。
+/// 边界：JSON 结构型取值必须拒绝，空字符串仍为具名缺失。
 #[test]
-fn json_non_numeric_value_becomes_named_absence() {
-    for raw in ["true", "[1,2]", r#"{"a":1}"#, r#""""#] {
+fn json_structural_values_are_rejected_and_blank_is_absent() {
+    for raw in ["true", "[1,2]", r#"{"a":1}"#] {
         let input = JSON.replacen("2.5", raw, 1);
-        let parsed = parse_uk_cb_observations(UkCbSourceId::S11, &input).expect("非数值按缺失");
-        assert!(parsed[0].value.is_absent(), "{raw} 应表达为具名缺失");
+        assert_eq!(
+            parse_uk_cb_observations(UkCbSourceId::S11, &input)
+                .unwrap_err()
+                .kind(),
+            UkCbErrorKind::Invalid
+        );
     }
+    let input = JSON.replacen("2.5", r#""""#, 1);
+    let parsed = parse_uk_cb_observations(UkCbSourceId::S11, &input).expect("空字符串是具名缺失");
+    assert!(parsed[0].value.is_absent());
 }
 
 /// 边界：前导 BOM 是编码产物，容忍一次；不影响其余校验。

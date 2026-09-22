@@ -227,7 +227,7 @@ fn parse_json(input: &str) -> UkCbResult<Vec<UkCbObservation>> {
         let observation = UkCbObservation {
             series: UkCbSeriesId::parse(&item.series)?,
             period: parse_period(&item.period)?,
-            value: json_value(item.value),
+            value: json_value(item.value)?,
             unit: UkCbUnit::parse(item.unit.trim())?,
             frequency: Frequency::parse(item.frequency.trim())?,
             revision: item.revision.and_then(|text| optional_token(&text)),
@@ -239,21 +239,21 @@ fn parse_json(input: &str) -> UkCbResult<Vec<UkCbObservation>> {
 }
 
 /// JSON 取值：`null` → 空；有限数 → 有值；字符串 → 空或标记；其余 → 拒绝。
-fn json_value(value: serde_json::Value) -> UkCbValue {
+fn json_value(value: serde_json::Value) -> UkCbResult<UkCbValue> {
     match value {
         serde_json::Value::Number(number) => match number.as_f64() {
-            Some(finite) if finite.is_finite() => UkCbValue::Present(finite),
-            _ => UkCbValue::Absent(UkCbAbsence::ExplicitMarker),
+            Some(finite) if finite.is_finite() => Ok(UkCbValue::Present(finite)),
+            _ => Err(UkCbError::Invalid("JSON 取值须为有限数值".to_owned())),
         },
-        serde_json::Value::Null => UkCbValue::Absent(UkCbAbsence::BlankInSource),
-        serde_json::Value::String(text) => {
-            if text.trim().is_empty() {
-                UkCbValue::Absent(UkCbAbsence::BlankInSource)
-            } else {
-                UkCbValue::Absent(UkCbAbsence::ExplicitMarker)
-            }
-        }
-        _ => UkCbValue::Absent(UkCbAbsence::ExplicitMarker),
+        serde_json::Value::Null => Ok(UkCbValue::Absent(UkCbAbsence::BlankInSource)),
+        serde_json::Value::String(text) => Ok(UkCbValue::Absent(if text.trim().is_empty() {
+            UkCbAbsence::BlankInSource
+        } else {
+            UkCbAbsence::ExplicitMarker
+        })),
+        _ => Err(UkCbError::Invalid(
+            "JSON 取值只接受数值、null 或字符串标记".to_owned(),
+        )),
     }
 }
 
@@ -516,5 +516,15 @@ mod tests {
                 .kind(),
             UkCbErrorKind::SemanticallyRejected
         );
+    }
+
+    #[test]
+    fn json_structural_values_are_rejected() {
+        for value in ["true", "[]", "{\"unknown\":123}"] {
+            let input = format!(
+                r#"{{"_synthetic":true,"_note":"合成回归","observations":[{{"series":"ONS.CPI.YOY","period":"2026-09","value":{value},"unit":"percent","frequency":"monthly"}}]}}"#
+            );
+            assert!(parse_uk_cb_observations(UkCbSourceId::S11, &input).is_err());
+        }
     }
 }
