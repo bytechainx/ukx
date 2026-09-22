@@ -84,6 +84,15 @@ pub fn authorize(evidence: Option<&UkCbAuthorizationEvidence>, as_of: Date) -> U
             reason: "未获 Owner 签核".to_owned(),
         };
     }
+    if as_of.validate().is_err()
+        || evidence.valid_from.validate().is_err()
+        || evidence.valid_until.validate().is_err()
+        || evidence.valid_from > evidence.valid_until
+    {
+        return UkCbAuthorization::Denied {
+            reason: "授权日期非法或有效期区间倒置，无法确认有效性".to_owned(),
+        };
+    }
     if as_of < evidence.valid_from {
         return UkCbAuthorization::Denied {
             reason: format!("证据尚未生效（生效日 {}）", evidence.valid_from),
@@ -199,5 +208,33 @@ mod tests {
             UkCbErrorKind::AuthorizationDenied
         );
         assert!(ensure_authorized(Some(&complete()), date("2026-09-22")).is_ok());
+    }
+
+    #[test]
+    fn invalid_dates_never_authorize() {
+        let valid = crate::Date::new(2026, 9, 23).unwrap();
+        let invalid = crate::Date {
+            year: 2026,
+            month: 99,
+            day: 99,
+        };
+        for (start, end, today) in [
+            (valid, invalid, valid),
+            (invalid, valid, valid),
+            (valid, valid, invalid),
+            (crate::Date::new(2026, 9, 24).unwrap(), valid, valid),
+        ] {
+            let evidence = UkCbAuthorizationEvidence {
+                scope: "合成范围".into(),
+                signer: "合成签署者".into(),
+                owner_signed: true,
+                valid_from: start,
+                valid_until: end,
+            };
+            assert!(matches!(
+                authorize(Some(&evidence), today),
+                UkCbAuthorization::Denied { .. }
+            ));
+        }
     }
 }
