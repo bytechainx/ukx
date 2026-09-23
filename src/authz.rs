@@ -1,6 +1,6 @@
 //! ukx 的授权判定（**fail-closed**）。
 //!
-//! 权威依据：`specs/005-macro-data-source-crates/contracts/module-roster.json` 的
+//! 权威依据：`specs/features/005-macro-data-source-crates/contracts/module-roster.json` 的
 //! `uk_cb` 条目 —— `authorization = unknown`，
 //! `authorization_evidence = "无 Owner 签核文件；Series/UA/许可 UNKNOWN"`。
 //!
