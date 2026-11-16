@@ -81,12 +81,12 @@ CSV / JSON 离线解析、授权判定、publication 语义、三类测试与合
 
 | 依赖 | 版本 | 其 `rust_version` |
 | --- | --- | --- |
-| `thiserror` | 2.0.20 | 1.71 |
-| `thiserror-impl` | 2.0.20 | 1.71 |
+| `thiserror` | 2.0.21 | 1.77 |
+| `thiserror-impl` | 2.0.21 | 1.77 |
 | `serde` | 1.0.229 | 1.56 |
 | `serde_core` | 1.0.229 | 1.56 |
 | `serde_derive` | 1.0.229 | 1.71 |
-| `serde_json` | 1.0.151 | 1.71 |
+| `serde_json` | 1.0.154 | 1.71 |
 | `proc-macro2` | 1.0.107 | 1.71 |
 | `quote` | 1.0.47 | 1.71 |
 | `syn` | 3.0.6 | 1.71 |
@@ -94,7 +94,7 @@ CSV / JSON 离线解析、授权判定、publication 语义、三类测试与合
 | `memchr` | 2.8.3 | 1.61 |
 | `itoa` | 1.0.18 | 1.68 |
 
-**推导结果**：`1.71`（最大值取自 `thiserror` / `serde_derive` / `serde_json` 等）。
+**推导结果**：`1.77`（最大值取自 `thiserror` / `thiserror-impl` 2.0.21；2026-11-16 复核）。
 语言特性方面本 crate 只用到 edition 2021 与标准库，未额外抬高该下界。
 
 ## 已知缺口
