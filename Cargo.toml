@@ -2,7 +2,7 @@
 name = "ukx"
 version = "0.1.1"
 edition = "2021"
-rust-version = "1.71"
+rust-version = "1.77"
 description = "英国央行（BoE）数据源事实层：源登记与 IADB 关键码类型化、离线解析、曲线路由与 fail-closed 授权判定"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bytechainx/ukx"
