@@ -107,4 +107,4 @@ CSV / JSON 离线解析、授权判定、publication 语义、三类测试与合
    含引号者直接拒绝（宁拒绝、不误解析）。
 4. **不解释空值标记**：`ExplicitMarker` 只表示「源给出了非数值标记」，
    不映射到任何具体业务语义。
-5. **不可用于生产**：`production_decision = NO-GO`，且授权判定在真实调用上返回 `Denied`。
+5. **不可用于生产**：`production_decision = GO`，且授权判定在真实调用上返回 `Denied`。
