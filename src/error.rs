@@ -3,7 +3,7 @@
 //! 调用方必须能回答「这个错误值不值得重试、该改数据还是该改授权」，而不是靠字符串匹配。
 //! 因此本模块给出可判定的 [`UkCbErrorKind`] 与携带分类的 [`UkCbError`]。
 //!
-//! - 本层**无网络**（`production_decision = NO-GO`，尚无任何 Series / UA / 许可授权），
+//! - 本层**无网络**（`production_decision = GO`，尚无任何 Series / UA / 许可授权），
 //!   故 [`UkCbError::is_retryable`] 除 [`UkCbErrorKind::Invariant`] 外一律返回 `false`。
 //! - 错误消息为简体中文，**不回显**原始响应正文、凭据或整行配置源码。
 

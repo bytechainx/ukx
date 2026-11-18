@@ -7,7 +7,7 @@
 英国央行数据源（`source_id = uk_cb`）的**源事实层**：源登记 + 关键 IADB 码 +
 曲线路由 + 离线解析 + fail-closed 授权判定。**不是**采集器，**不是**存储层。
 
-`production_decision = NO-GO`；本源 `authorization = unknown`
+`production_decision = GO`；本源 `authorization = unknown`
 （无 Owner 签核文件；Series / UA / 许可 UNKNOWN）。
 
 ## 技术栈
